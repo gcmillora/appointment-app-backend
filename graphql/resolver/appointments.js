@@ -69,22 +69,26 @@ module.exports = {
   },
 
   //only update filled fields
-  updateAppointment: async (args) => {
+  updateAppointment: async (args, req) => {
     if (!req.isAuth) {
       throw new Error("User is not authenticated");
     }
     try {
-      const appointment = await Appointment.findById(args.appointmentId);
-      if (args.updateAppointment.comments) {
+      const appointment = await Appointment.findById(args.id);
+      if (!appointment) {
+        throw new Error("Appointment not found.");
+      }
+
+      if (args.updateAppointment.comments != "undefined") {
         appointment.comments = args.updateAppointment.comments;
       }
-      if (args.updateAppointment.fromDate) {
+      if (args.updateAppointment.fromDate != "undefined") {
         appointment.fromDate = args.updateAppointment.fromDate;
       }
-      if (args.updateAppointment.toDate) {
+      if (args.updateAppointment.toDate != "undefined") {
         appointment.toDate = args.updateAppointment.toDate;
       }
-      if (args.updateAppointment.patient) {
+      if (args.updateAppointment.patient != "undefined") {
         appointment.patient = args.updateAppointment.patient;
       }
       await appointment.save();
