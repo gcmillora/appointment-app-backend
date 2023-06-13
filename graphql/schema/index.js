@@ -3,6 +3,7 @@ const { buildSchema } = require("graphql");
 module.exports = buildSchema(`
 type Appointment {
     _id: ID!
+    patient: String!
     comments: String!
     fromDate: String!
     toDate: String!
@@ -28,7 +29,7 @@ type AuthData{
 }
 
 type RootQuery {
-    appointments: [Appointment!]!
+    appointments(id: String!): [Appointment!]!
     login(email: String!, password: String!): AuthData!
 }
 
@@ -36,10 +37,11 @@ type RootMutation {
     createAppointment(appointmentInput: AppointmentInput): Appointment
     createUser(userInput: UserInput): User
     deleteAppointment(appointmentId: ID!): Appointment
-    updateAppointment(appointmentId: ID!, appointmentInput: AppointmentInput): Appointment
+    updateAppointment(id: ID!, updateAppointment: UpdateAppointment): Appointment
 }
 
 input AppointmentInput {
+    patient: String!
     comments: String!
     fromDate: String!
     toDate: String!
@@ -50,12 +52,12 @@ schema {
     mutation: RootMutation
 }
 
-type updateAppointment {
+input UpdateAppointment {
+    patient: String
     comments: String
     fromDate: String
     toDate: String
 }
-
 
     
         `);

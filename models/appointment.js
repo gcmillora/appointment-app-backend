@@ -15,6 +15,10 @@ const appointmentSchema = new Schema({
     type: Date,
     required: true,
   },
+  patient: {
+    type: String,
+    required: true,
+  },
   createdBy: {
     type: Schema.Types.ObjectId,
     ref: "User",

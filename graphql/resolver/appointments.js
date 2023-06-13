@@ -1,15 +1,19 @@
+const appointment = require("../../models/appointment");
 const Appointment = require("../../models/appointment");
 const User = require("../../models/user");
 const { transformAppointment } = require("./merge");
 
 module.exports = {
-  appointments: async () => {
+  appointments: async (args) => {
     try {
-      const appointments = await Appointment.find();
-
-      return appointments.map((appointment) => {
-        return transformAppointment(appointment);
-      });
+      const appointments = await Appointment.find().sort({ fromDate: 1 });
+      return appointments
+        .filter((appointment) => {
+          return appointment.createdBy._id == args.id;
+        })
+        .map((appointment) => {
+          return transformAppointment(appointment);
+        });
     } catch (err) {
       throw err;
     }
@@ -21,6 +25,7 @@ module.exports = {
     }
 
     const appointment = new Appointment({
+      patient: args.appointmentInput.patient,
       comments: args.appointmentInput.comments,
       fromDate: new Date(args.appointmentInput.fromDate),
       toDate: new Date(args.appointmentInput.toDate),
@@ -47,14 +52,17 @@ module.exports = {
     }
   },
 
-  deleteAppointment: async (args) => {
+  deleteAppointment: async (args, req) => {
     if (!req.isAuth) {
       throw new Error("User is not authenticated");
     }
     try {
-      const appointment = await Appointment.findById(args.appointmentId);
+      const appointment = await Appointment.findById(
+        args.appointmentId
+      ).populate("createdBy");
+      const transf = transformAppointment(appointment);
       await Appointment.deleteOne({ _id: args.appointmentId });
-      return appointment;
+      return transf;
     } catch (err) {
       throw err;
     }
@@ -67,14 +75,17 @@ module.exports = {
     }
     try {
       const appointment = await Appointment.findById(args.appointmentId);
-      if (args.appointmentInput.comments) {
-        appointment.comments = args.appointmentInput.comments;
+      if (args.updateAppointment.comments) {
+        appointment.comments = args.updateAppointment.comments;
       }
-      if (args.appointmentInput.fromDate) {
-        appointment.fromDate = args.appointmentInput.fromDate;
+      if (args.updateAppointment.fromDate) {
+        appointment.fromDate = args.updateAppointment.fromDate;
       }
-      if (args.appointmentInput.toDate) {
-        appointment.toDate = args.appointmentInput.toDate;
+      if (args.updateAppointment.toDate) {
+        appointment.toDate = args.updateAppointment.toDate;
+      }
+      if (args.updateAppointment.patient) {
+        appointment.patient = args.updateAppointment.patient;
       }
       await appointment.save();
       return appointment;
